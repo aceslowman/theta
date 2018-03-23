@@ -10,8 +10,7 @@ var mouse = new Point();
 var dragging = false;
 var hiddenText = false;
 
-g = new Global("rings");
-g.rings = [];
+var rings = [];
 
 var active_colors = [
   new Color(0.7 + 0.3,0.4 + 0.3,0.8 + 0.3,1.0),
@@ -32,8 +31,8 @@ var inactive_colors = [
 ];
 
 for(var i = 0; i < number_of_rings; i++){
-  g.rings.push(new Ring((max_size/number_of_rings)*(i+1),(number_of_rings-1)-i));
-  g.rings[i].updateObjects();
+  rings.push(new Ring((max_size/number_of_rings)*(i+1),(number_of_rings-1)-i));
+  rings[i].updateObjects();
 }
 
 onresize();
@@ -43,10 +42,10 @@ function bang(){
 }
 
 function reset (){
-  g.rings = [];
+  rings = [];
   for(var i = 0; i < number_of_rings; i++){
-    g.rings.push(new Ring((max_size/number_of_rings)*(i+1),(number_of_rings-1)-i));
-    g.rings[i].updateObjects();
+    rings.push(new Ring((max_size/number_of_rings)*(i+1),(number_of_rings-1)-i));
+    rings[i].updateObjects();
   }
   onresize();
   mgraphics.redraw();
@@ -54,14 +53,13 @@ function reset (){
 
 function paint(){
   drawAlignmentCompass(0.3);
-  for(var i = 0; i < g.rings.length; i++){
-    g.rings[i].update();
-    g.rings[i].display();
+  for(var i = 0; i < rings.length; i++){
+    rings[i].update();
+    rings[i].display();
   }
 
-  for(var i = 0; i < g.rings.length; i++){
-    g.rings[i].drawControl();
-    g.rings[i].drawText();
+  for(var i = 0; i < rings.length; i++){
+    rings[i].drawControl();
   }
 }
 
@@ -81,16 +79,14 @@ function Ring(radius, id){
   this.radius = radius;
   this.type   = 0;
 
-  this.frequency = 1;
-  // this.frequency = getObject("oscfreq"+id); //TODO: for large display text
   this.oscamp   = getObject("oscamp"+id);
   this.osctype  = getObject("osctype"+id);
   this.osctheta = getObject("osctheta"+id);
 
   this.ctrl_radius = 0.08;
   this.ctrl_position   = new Point();
-  this.ctrl_position.x = (this.radius*max_size)*Math.cos(this.theta) + this.center.x;
-  this.ctrl_position.y = (this.radius*max_size)*Math.sin(this.theta) + this.center.y;
+  this.ctrl_position.x = (this.radius*max_size)*Math.cos(this.theta)+this.center.x;
+  this.ctrl_position.y = (this.radius*max_size)*Math.sin(this.theta)+this.center.y;
 
   this.display = function(){
     with(mgraphics){
@@ -147,44 +143,6 @@ function Ring(radius, id){
 
       set_source_rgb(0,0,0);
       stroke();
-    }
-  }
-
-  this.drawText = function(){
-    with(mgraphics){
-      if(!hiddenText){
-        set_source_rgb(0,0,0);
-        var text_dim = text_measure(this.frequency.toFixed(2)+" hz");
-        move_to(
-          this.ctrl_position.x - this.ctrl_radius/2,
-          this.ctrl_position.y + this.ctrl_radius - (text_dim[1])/getHeight()
-        );
-        show_text(this.frequency.toFixed(2)+" hz");
-        stroke();
-
-        move_to(
-          this.ctrl_position.x - this.ctrl_radius/2,
-          this.ctrl_position.y - this.ctrl_radius - (text_dim[1])/getHeight()
-        );
-        show_text("Θ = "+this.theta.toFixed(2));
-
-        if(this.selected){
-          this.textcolor = new Color(1,1,1,1);
-        }else{
-          this.textcolor = new Color(0,0,0,1);
-        }
-
-        set_source_rgb(this.textcolor.r,this.textcolor.g,this.textcolor.b);
-        stroke();
-
-        //id
-        var text_dim = text_measure(""+this.id);
-        move_to(
-          this.ctrl_position.x - text_dim[0]/getWidth(),
-          this.ctrl_position.y - (text_dim[1]/getHeight())/2 - 0.003
-        );
-        show_text(""+this.id);
-      }
     }
   }
 
@@ -257,20 +215,20 @@ function ondrag(x,y,button){
   mouse.y = loc[1];
 
   if(button){
-    for(var i = 0; i < g.rings.length; i++){
+    for(var i = 0; i < rings.length; i++){
       if(!dragging){
-        if( mouse.x > (g.rings[i].ctrl_position.x - (g.rings[i].ctrl_radius / 2))
-          && mouse.x < (g.rings[i].ctrl_position.x + (g.rings[i].ctrl_radius / 2))
-          && mouse.y > (g.rings[i].ctrl_position.y - (g.rings[i].ctrl_radius / 2))
-          && mouse.y < (g.rings[i].ctrl_position.y + (g.rings[i].ctrl_radius / 2))){
-          g.rings[i].selected = true;
+        if( mouse.x > (rings[i].ctrl_position.x - (rings[i].ctrl_radius / 2))
+          && mouse.x < (rings[i].ctrl_position.x + (rings[i].ctrl_radius / 2))
+          && mouse.y > (rings[i].ctrl_position.y - (rings[i].ctrl_radius / 2))
+          && mouse.y < (rings[i].ctrl_position.y + (rings[i].ctrl_radius / 2))){
+          rings[i].selected = true;
           dragging = true;
         }
       }
     }
   }else{
-    for(var i = 0; i < g.rings.length; i++){
-      g.rings[i].selected = false;
+    for(var i = 0; i < rings.length; i++){
+      rings[i].selected = false;
       dragging = false;
     }
   }
@@ -282,13 +240,13 @@ function ondrag(x,y,button){
 function onresize(){
   if(getWidth() < 300 || getHeight < 300){
       hiddenText = true;
-      for(var i = 0; i < g.rings.length; i++){
-        g.rings[i].ctrl_radius = 0.2;
+      for(var i = 0; i < rings.length; i++){
+        rings[i].ctrl_radius = 0.2;
       }
   }else{
       hiddenText = false;
-      for(var i = 0; i < g.rings.length; i++){
-        g.rings[i].ctrl_radius = 0.08;
+      for(var i = 0; i < rings.length; i++){
+        rings[i].ctrl_radius = 0.08;
       }
   }
 }
