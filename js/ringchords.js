@@ -82,7 +82,7 @@ function Ring(radius, id){
   this.type   = 0;
 
   this.oscamp   = getObject("oscamp"+id);
-  this.osctype  = getObject("osctype"+id);
+  // this.osctype  = getObject("osctype"+id);
   this.osctheta = getObject("osctheta"+id);
 
   this.live_oscamp   = getObject("live_oscamp"+id);
@@ -173,9 +173,7 @@ function Ring(radius, id){
 
   this.updateObjects = function(){
     this.oscamp.float(this.radius/max_size);
-
     this.osctheta.float(this.theta);
-
     this.live_osctype.set(this.type);
 
     if(this.selected){ //this is a dragging check on ALL items. Try localizing.

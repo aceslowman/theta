@@ -32,6 +32,16 @@ var inactive_colors = [
 
 onresize();
 
+function refresh(){
+  rings = [];
+  for(var i = 0; i < number_of_rings; i++){
+    rings.push(new Ring((max_size/number_of_rings)*(i+1),(number_of_rings-1)-i));
+    rings[i].getFromObjects();
+  }
+  onresize();
+  mgraphics.redraw();
+}
+
 function bang(){
     mgraphics.redraw();
 }
@@ -41,6 +51,8 @@ function reset(){
   for(var i = 0; i < number_of_rings; i++){
     rings.push(new Ring((max_size/number_of_rings)*(i+1),(number_of_rings-1)-i));
     rings[i].updateObjects();
+    rings[i].live_oscamp.float(rings[i].radius/max_size);
+    rings[i].live_osctheta.float(rings[i].theta);
   }
   onresize();
   mgraphics.redraw();
@@ -77,11 +89,10 @@ function Ring(radius, id){
 
   this.oscfreq  = getObject("oscfreq"+id);
   this.oscamp   = getObject("oscamp"+id);
-  // this.osctype  = getObject("osctype"+id);
   this.osctheta = getObject("osctheta"+id);
 
   this.live_oscamp   = getObject("live_oscamp"+id);
-  this.live_osctype  = getObject("live_osctype"+id);
+  this.live_osctype  = getObject("live_osctype"+id); // only live object needed
   this.live_osctheta = getObject("live_osctheta"+id);
 
   if(this.oscfreq){
@@ -89,7 +100,7 @@ function Ring(radius, id){
   }
 
   this.ctrl_radius = 0.08;
-  this.ctrl_position   = new Point();
+  this.ctrl_position = new Point();
   this.ctrl_position.x = (this.radius*max_size)*Math.cos(this.theta) + this.center.x;
   this.ctrl_position.y = (this.radius*max_size)*Math.sin(this.theta) + this.center.y;
 
@@ -208,12 +219,19 @@ function Ring(radius, id){
   this.updateObjects = function(){
     this.oscamp.float(this.radius/max_size);
     this.osctheta.float(this.theta);
-    // this.live_osctype.set(this.type);
+    this.live_osctype.set(this.type);
 
     if(this.selected){
       this.live_oscamp.float(this.radius/max_size);
       this.live_osctheta.float(this.theta);
     }
+  }
+
+  this.getFromObjects = function(){
+    this.radius = this.oscamp.getvalueof() * max_size;
+    this.offset = this.osctheta.getvalueof();
+    this.type = this.live_osctype.getvalueof();
+    this.frequency = this.oscfreq.getvalueof();
   }
 
   this.updateUI = function(active){
