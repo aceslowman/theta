@@ -41,11 +41,13 @@ function bang(){
     mgraphics.redraw();
 }
 
-function reset (){
+function reset(){
   rings = [];
   for(var i = 0; i < number_of_rings; i++){
     rings.push(new Ring((max_size/number_of_rings)*(i+1),(number_of_rings-1)-i));
     rings[i].updateObjects();
+    rings[i].live_oscamp.float(rings[i].radius/max_size);
+    rings[i].live_osctheta.float(rings[i].theta);
   }
   onresize();
   mgraphics.redraw();
@@ -171,7 +173,9 @@ function Ring(radius, id){
 
   this.updateObjects = function(){
     this.oscamp.float(this.radius/max_size);
+
     this.osctheta.float(this.theta);
+
     this.live_osctype.set(this.type);
 
     if(this.selected){ //this is a dragging check on ALL items. Try localizing.
