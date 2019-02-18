@@ -3,6 +3,7 @@ mgraphics.relative_coords = 1; // allows for 0-1 coords
 mgraphics.autofill = 0;
 
 var number_of_rings = 6;
+var base_frequency = 300;
 var max_size = 0.9;
 
 var mouse = new Point();
@@ -60,6 +61,7 @@ function paint(){
 
   for(var i = 0; i < rings.length; i++){
     rings[i].drawControl();
+    rings[i].drawText();
   }
 }
 
@@ -79,18 +81,19 @@ function Ring(radius, id){
   this.radius = radius;
   this.type   = 0;
 
+  this.frequency = 1;
+
   this.oscamp   = getObject("oscamp"+id);
+  this.oscfreq  = getObject("oscfreq"+id);
   this.osctype  = getObject("osctype"+id);
   this.osctheta = getObject("osctheta"+id);
 
-  this.live_oscamp   = getObject("live_oscamp"+id);
-  this.live_osctype  = getObject("live_osctype"+id);
-  this.live_osctheta = getObject("live_osctheta"+id);
+  //listMethods(this.oscamp);
 
   this.ctrl_radius = 0.08;
   this.ctrl_position   = new Point();
-  this.ctrl_position.x = (this.radius*max_size)*Math.cos(this.theta)+this.center.x;
-  this.ctrl_position.y = (this.radius*max_size)*Math.sin(this.theta)+this.center.y;
+  this.ctrl_position.x = (this.radius*max_size)*Math.cos(this.theta) + this.center.x;
+  this.ctrl_position.y = (this.radius*max_size)*Math.sin(this.theta) + this.center.y;
 
   this.display = function(){
     with(mgraphics){
@@ -117,7 +120,7 @@ function Ring(radius, id){
           this.ctrl_radius
         );
       }else if(this.type == 1){ // triangle
-        move_to(this.ctrl_position.x,this.ctrl_position.y - 0.08);
+        move_to(this.ctrl_position.x,this.ctrl_position.y - 0.03);
         rel_move_to(this.ctrl_radius/2 + 0.01,0);
         rel_line_to(-this.ctrl_radius/2 - 0.01, this.ctrl_radius);
         rel_line_to(-this.ctrl_radius/2 - 0.01, -this.ctrl_radius);
@@ -150,6 +153,36 @@ function Ring(radius, id){
     }
   }
 
+  this.drawText = function(){
+    with(mgraphics){
+      if(!hiddenText){
+        set_source_rgb(0,0,0);
+        var text_dim = text_measure(this.frequency.toFixed(2)+" hz");
+        move_to(
+          this.ctrl_position.x - (this.ctrl_radius/2 + (text_dim[0]/getWidth())/2) + 0.008,
+          this.ctrl_position.y + this.ctrl_radius - (text_dim[1])/getHeight() + 0.01
+        );
+        show_text(this.frequency.toFixed(2)+" hz");
+        stroke();
+
+        move_to(
+          this.ctrl_position.x - (this.ctrl_radius/2 + ((text_dim[0]/getWidth()) + 0.02) /2),
+          this.ctrl_position.y - this.ctrl_radius - ((text_dim[1])/getHeight())+0.01
+        );
+        show_text("Θ = "+this.theta.toFixed(2));
+
+        if(this.selected){
+          this.textcolor = new Color(1,1,1,1);
+        }else{
+          this.textcolor = new Color(0,0,0,1);
+        }
+
+        set_source_rgb(this.textcolor.r,this.textcolor.g,this.textcolor.b);
+        stroke();
+      }
+    }
+  }
+
   this.update = function(){
     this.checkParamsChanged();
 
@@ -166,35 +199,42 @@ function Ring(radius, id){
       this.ctrl_position.x - this.center.x
     );
 
+    var linearRadians = Math.PI + (Math.PI + this.theta);
+
+    if(this.theta < 0){
+      this.frequency = (map(
+        linearRadians,0,Math.PI*2,0,base_frequency) + base_frequency);
+    }else{
+      this.frequency = (map(
+        linearRadians,0,Math.PI*2,0,base_frequency
+      ));
+    }
+
     this.updateObjects();
   }
 
   this.updateObjects = function(){
-    this.oscamp.float(this.radius/max_size);
-    this.osctheta.float(this.theta);
-    this.live_osctype.set(this.type);
-
-    if(this.selected){ //this is a dragging check on ALL items. Try localizing.
-      this.live_oscamp.float(this.radius/max_size);
-      this.live_osctheta.float(this.theta);
-    }
+    this.oscamp.set(this.radius/max_size);
+    this.oscfreq.set(this.frequency);
+    this.osctheta.set(this.theta);
+    this.osctype.set(this.type);
   }
 
   this.updateUI = function(active){
     if(active){
-       this.live_osctype.activebgcolor(this.ctrl_on.r,this.ctrl_on.g,this.ctrl_on.b,1);
-       this.live_oscamp.activebgcolor(this.ctrl_on.r,this.ctrl_on.g,this.ctrl_on.b,1);
-       this.live_osctheta.activebgcolor(this.ctrl_on.r,this.ctrl_on.g,this.ctrl_on.b,1);
-       this.live_oscamp.textcolor(0,0,0,1);
-       this.live_osctheta.textcolor(0,0,0,1);
-       this.live_osctype.textcolor(0,0,0,1);
+       this.osctype.activebgcolor(this.ctrl_on.r,this.ctrl_on.g,this.ctrl_on.b,1);
+       this.oscamp.activebgcolor(this.ctrl_on.r,this.ctrl_on.g,this.ctrl_on.b,1);
+       this.osctheta.activebgcolor(this.ctrl_on.r,this.ctrl_on.g,this.ctrl_on.b,1);
+       this.oscamp.textcolor(0,0,0,1);
+       this.osctheta.textcolor(0,0,0,1);
+       this.osctype.textcolor(0,0,0,1);
     }else{
-       this.live_oscamp.activebgcolor(0.2,0.2,0.2,1);
-       this.live_osctheta.activebgcolor(0.2,0.2,0.2,1);
-       this.live_osctype.activebgcolor(0.2,0.2,0.2,1);
-       this.live_oscamp.textcolor(1,1,1,1);
-       this.live_osctheta.textcolor(1,1,1,1);
-       this.live_osctype.textcolor(1,1,1,1);
+       this.oscamp.activebgcolor(0.2,0.2,0.2,1);
+       this.osctheta.activebgcolor(0.2,0.2,0.2,1);
+       this.osctype.activebgcolor(0.2,0.2,0.2,1);
+       this.oscamp.textcolor(1,1,1,1);
+       this.osctheta.textcolor(1,1,1,1);
+       this.osctype.textcolor(1,1,1,1);
     }
   }
 
@@ -209,11 +249,12 @@ function Ring(radius, id){
       this.offset = this.osctheta.getvalueof();
     }
 
-    if(this.type != this.live_osctype.getvalueof()){ //param changed
+    if(this.type != this.osctype.getvalueof()){ //param changed
       this.updateUI(this.selected,"type");
-      this.type = this.live_osctype.getvalueof();
+      this.type = this.osctype.getvalueof();
     }
   }
+
 }
 
 //------------------------------------------------------------------------------
@@ -261,9 +302,16 @@ function onresize(){
 }
 
 //------------------------------------------------------------------------------
+// EVENT HANDLERS
+function freq(value){
+  base_frequency = value;
+  mgraphics.redraw();
+}
+
+//------------------------------------------------------------------------------
 // CONVENIENCE
 function getObject(name){
-  return this.patcher.getnamed(name);
+  return this.patcher.parentpatcher.getnamed(name);
 }
 
 function getWidth(){
@@ -285,7 +333,7 @@ function drawAlignmentCompass(alpha){
       move_to(0,0);
       line_to(line_point.x,line_point.y);
       line_point = line_point.rotate(Math.PI/4);
-      stroke_with_alpha(alpha);
+      // stroke_with_alpha(1);
     }
 
     var line_point = new Point(0,max_size-0.2);
@@ -294,16 +342,17 @@ function drawAlignmentCompass(alpha){
       move_to(0,0);
       line_to(line_point.x,line_point.y);
       line_point = line_point.rotate(Math.PI/4);
-      stroke_with_alpha(alpha);
+      // stroke_with_alpha(alpha);
     }
+    stroke_with_alpha(alpha);
 
     move_to(max_size - 0.05,0);
-    set_line_width(0.1);
+    set_line_width(0.01);
     rel_line_to(0.1,0);
-    set_line_width(0.01);//set line width
+    set_line_width(0.005);//set line width
 
     if(!hiddenText){
-      move_to(max_size + 0.02,-text_measure("Θ = 0")[1]/getHeight());
+      move_to(max_size + 0.1,-text_measure("Θ = 0")[1]/getHeight() + 0.01);
       show_text("Θ = 0");
     }
 

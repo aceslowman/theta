@@ -77,12 +77,8 @@ function Ring(radius, id){
 
   this.oscfreq  = getObject("oscfreq"+id);
   this.oscamp   = getObject("oscamp"+id);
-  // this.osctype  = getObject("osctype"+id);
+  this.osctype  = getObject("osctype"+id);
   this.osctheta = getObject("osctheta"+id);
-
-  this.live_oscamp   = getObject("live_oscamp"+id);
-  this.live_osctype  = getObject("live_osctype"+id);
-  this.live_osctheta = getObject("live_osctheta"+id);
 
   if(this.oscfreq){
     this.frequency = this.oscfreq.getvalueof();
@@ -208,29 +204,24 @@ function Ring(radius, id){
   this.updateObjects = function(){
     this.oscamp.float(this.radius/max_size);
     this.osctheta.float(this.theta);
-    // this.live_osctype.set(this.type);
-
-    if(this.selected){
-      this.live_oscamp.float(this.radius/max_size);
-      this.live_osctheta.float(this.theta);
-    }
+    this.osctype.set(this.type);
   }
 
   this.updateUI = function(active){
     if(active){
-       this.live_osctype.activebgcolor(this.ctrl_on.r,this.ctrl_on.g,this.ctrl_on.b,1);
-       this.live_oscamp.activebgcolor(this.ctrl_on.r,this.ctrl_on.g,this.ctrl_on.b,1);
-       this.live_osctheta.activebgcolor(this.ctrl_on.r,this.ctrl_on.g,this.ctrl_on.b,1);
-       this.live_oscamp.textcolor(0,0,0,1);
-       this.live_osctheta.textcolor(0,0,0,1);
-       this.live_osctype.textcolor(0,0,0,1);
+       this.osctype.activebgcolor(this.ctrl_on.r,this.ctrl_on.g,this.ctrl_on.b,1);
+       this.oscamp.activebgcolor(this.ctrl_on.r,this.ctrl_on.g,this.ctrl_on.b,1);
+       this.osctheta.activebgcolor(this.ctrl_on.r,this.ctrl_on.g,this.ctrl_on.b,1);
+       this.oscamp.textcolor(0,0,0,1);
+       this.osctheta.textcolor(0,0,0,1);
+       this.osctype.textcolor(0,0,0,1);
     }else{
-       this.live_oscamp.activebgcolor(0.2,0.2,0.2,1);
-       this.live_osctheta.activebgcolor(0.2,0.2,0.2,1);
-       this.live_osctype.activebgcolor(0.2,0.2,0.2,1);
-       this.live_oscamp.textcolor(1,1,1,1);
-       this.live_osctheta.textcolor(1,1,1,1);
-       this.live_osctype.textcolor(1,1,1,1);
+       this.oscamp.activebgcolor(0.2,0.2,0.2,1);
+       this.osctheta.activebgcolor(0.2,0.2,0.2,1);
+       this.osctype.activebgcolor(0.2,0.2,0.2,1);
+       this.oscamp.textcolor(1,1,1,1);
+       this.osctheta.textcolor(1,1,1,1);
+       this.osctype.textcolor(1,1,1,1);
     }
   }
 
@@ -245,9 +236,9 @@ function Ring(radius, id){
       this.offset = this.osctheta.getvalueof();
     }
 
-    if(this.type != this.live_osctype.getvalueof()){ //param changed
+    if(this.type != this.osctype.getvalueof()){ //param changed
       this.updateUI(this.selected,"type");
-      this.type = this.live_osctype.getvalueof();
+      this.type = this.osctype.getvalueof();
     }
 
     if(this.frequency != this.oscfreq.getvalueof()){
